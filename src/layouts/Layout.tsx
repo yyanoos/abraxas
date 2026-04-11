@@ -13,8 +13,11 @@ export default function Layout() {
 
   return (
     <div className="layout">
+      <a href="#main-content" className="skip-link">
+        본문으로 건너뛰기
+      </a>
       <Nav />
-      <main className={isWide ? "main main--wide" : "main"}>
+      <main id="main-content" className={isWide ? "main main--wide" : "main"}>
         <Outlet />
       </main>
       <Footer />

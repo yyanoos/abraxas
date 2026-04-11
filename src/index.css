@@ -95,6 +95,26 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* ===== Skip Link (Accessibility) ===== */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--s4);
+  padding: var(--s2) var(--s4);
+  background: var(--warm);
+  color: var(--bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--r2);
+  z-index: 1000;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: var(--s4);
+  color: var(--bg);
+}
+
 /* ===== Layout ===== */
 .layout {
   display: flex;
@@ -147,7 +167,7 @@ button:focus-visible {
 
 .nav-link {
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   letter-spacing: 0.05em;
   transition: color 0.2s;
   position: relative;
@@ -182,7 +202,7 @@ button:focus-visible {
   text-align: center;
   padding: var(--s12) var(--s4);
   color: var(--text-dim);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   max-width: var(--max-wide);
   margin: 0 auto;
