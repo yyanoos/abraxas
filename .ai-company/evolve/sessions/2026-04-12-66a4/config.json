@@ -1,0 +1,11 @@
+{
+  "sessionId": "2026-04-12-66a4",
+  "startedAt": "2026-04-12T23:30:00+09:00",
+  "focus": ["marketing", "design", "cleanup"],
+  "direction": "날 pr하는데 더 좋도록 - SEO, 첫인상, 시각적 완성도, 접근성 개선",
+  "priorities": ["SEO/OG 메타태그", "홈페이지 임팩트", "시각적 폴리시", "Links 페이지 완성", "접근성"],
+  "exclude": [],
+  "stopConditions": {
+    "global": { "maxCommits": 8 }
+  }
+}
