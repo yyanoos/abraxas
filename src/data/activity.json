@@ -1,0 +1,710 @@
+{
+  "generatedAt": "2026-08-03",
+  "range": {
+    "from": "2026-07-04",
+    "to": "2026-07-23"
+  },
+  "stats": {
+    "items": 30,
+    "projects": 3,
+    "changedFiles": 197,
+    "linesAdded": 11586,
+    "linesDeleted": 842
+  },
+  "items": [
+    {
+      "id": "With-Suhyeon-Server/keyword-push-gate",
+      "date": "2026-07-23",
+      "startedAt": "2026-07-23",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "키워드 푸시 게이트 service_notification_toggle 전환 (구가입자 push_message_toggle=false 박제 해소)",
+      "whyMatters": "운영에서 키워드 알림이 알림 목록에만 생성되고 FCM 푸시가 미발송되는 결함(/issue keyword-push-not-sent-prod-202607). 원인은 키워드 푸시만 앱 UI에 연결되지 않은 dead toggle인 push_message_toggle을 게이트로 사용 — 2026-05-31 이전 가입자는 기본값 false 박제 + 스스로 켤 수 없어 활성 유저 64.6%가 구조적 미도달. 다른 서비스성 푸시(티켓 만료·갤러리 요약)는 모두 service_notification_toggle 게이트라 semantics 불일치도 있었다.",
+      "howSolved": "KeywordNotificationService의 발송 게이트 1줄을 pushMessageToggle → serviceNotificationToggle로 교체해 기존 서비스성 푸시 게이트 패턴과 통일. FcmTokenService javadoc의 '호출측 책임' 문구 정정. 토글 값·consent·스키마는 일절 변경 없음(자동 ON·백필 없음). 기존 통합 테스트 AC-15 계열을 새 semantics(push=OFF·svc=ON → 발송, svc=OFF → 인앱 알림만)로 재작성해 TDD로 검증. small fast-path로 진행.",
+      "impact": "키워드 등록 유저 107명 중 push=OFF·svc=ON 3명 즉시 구제 + 향후 등록자 전원 svc 게이트 수신. 게이트 전환으로 수신이 축소되는 유저는 실측 0명(push=ON·svc=OFF 조합 없음).",
+      "learnings": "게이트 토글 전환 전 운영 DB 실측으로 report 전제(옵션1로 31명 구제)가 반증됨 — svc 토글도 같은 코호트에서 false 박제. 실측이 spec 방향(백필 기각·게이트 단독 전환)을 결정.",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.4",
+        "FCM",
+        "MySQL",
+        "JUnit5"
+      ],
+      "tags": [
+        "bugfix",
+        "notification",
+        "push"
+      ],
+      "affectedAreas": [
+        "notification",
+        "fcm"
+      ],
+      "domain": "notification",
+      "metrics": {
+        "changedFiles": 4,
+        "linesAdded": 1233,
+        "linesDeleted": 17,
+        "durationSec": 37645
+      }
+    },
+    {
+      "id": "ai-workflow/dev-review-doc-readable-and-diagrams",
+      "date": "2026-07-22",
+      "startedAt": "2026-07-22",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/dev 리뷰 문서를 의뢰자가 읽을 수 있게 — 원문 링크·서술 규약·필수 다이어그램",
+      "whyMatters": "/dev Phase 1.5 의 spec 리뷰 문서가 '리뷰어끼리만 통하는 문서'라 기능을 의뢰한 사람이 읽지 못한다는 사용자 지적에서 출발. 실제 사례에서 지적 내용 자체는 1차부터 맞았고 반영 후 2차 PASS 까지 갔지만, 좌표뿐인 참조·괄호 중첩 문장·미정의 용어 때문에 사용자가 수기 재작성을 요구했다. 읽히지 않은 지적은 반영되지 않으므로 리뷰 게이트의 실효가 전달 형식에 묶여 있었다.",
+      "howSolved": "spec-reviewer 에 리뷰 문서 작성 규약 R1~R4 를 신설: 좌표 대신 원문 인용 1줄 + 클릭 링크, 대조 2개 이상은 표, 축약 금지와 용어 첫 등장 정의, 2차 이상이면 반영 내역 표. 링크가 깨지지 않도록 Phase 1.5 가 리뷰 호출 직전 회차 스냅샷(_spec-v{N}.html)을 뜨고, _dev-view.sh 에 선택적 out_name 인자로 스냅샷 모드를 추가했다. 뷰어 템플릿은 파싱 전 인라인 SVG 를 보호하고 원문 각 줄에 #L{n} 앵커를 심는다. _diagram.html 에는 flowchart·sequence 를 필수 블록으로 올렸다.",
+      "impact": "리뷰 문서 1건당 사용자 수기 재작성 요구를 없애는 것이 목표. 부수로 뷰어의 scrollIntoView 예외가 TOC·링크 로직 전체를 죽이던 결함을 발견해 격리했다.",
+      "learnings": "규약을 문서에 쓸 때 소비자 쪽 계약(출력 형식·파일명·분기 조건)을 함께 확인하지 않으면 '적혀 있지만 성립하지 않는 지시'가 된다 — meta-review 1차 지적 4건이 전부 그 유형이었다.",
+      "techStack": [
+        "bash",
+        "markdown",
+        "agent-prompt",
+        "javascript",
+        "html"
+      ],
+      "tags": [
+        "tune",
+        "dev-workflow",
+        "documentation"
+      ],
+      "affectedAreas": [
+        "agents",
+        "_dev-procedures",
+        "scripts",
+        "inbox"
+      ],
+      "domain": "ai-workflow-meta",
+      "metrics": {
+        "changedFiles": 6,
+        "linesAdded": 270,
+        "linesDeleted": 22
+      }
+    },
+    {
+      "id": "ai-workflow/log-cmd-msys-path",
+      "date": "2026-07-22",
+      "startedAt": "2026-07-22",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "활동 로그 cmd 필드 오염 수정 — jq 호출 경계의 MSYS 경로 변환",
+      "whyMatters": "_log-activity.sh 를 간단 모드로 부를 때마다 cmd 가 'C:/Program Files/Git/dev' 로 기록돼, 누적 88건 중 67건이 오염된 상태였다. /log 보고서가 커맨드별로 필터링·집계하므로 커맨드 단위 통계가 통째로 어긋나고 있었다. 이번 /tune 의 started 이벤트를 찍다가 발견했다.",
+      "howSolved": "첫 가설(Git Bash 가 슬래시 인자를 변환한다)은 bash -x 추적과 인자 프로브로 배제했다 — 스크립트가 받은 값은 정상이었다. 격리 HOME 에서 패치본이 여전히 오염되는 것을 보고 범위를 좁혀, WinGet 으로 설치된 네이티브 jq.exe 호출 경계에서 MSYS 가 --arg 값을 Win32 경로로 바꾼다는 것을 'jq -nc --arg cmd /tune' 한 줄로 재현했다. 간단 모드 jq 호출에만 MSYS_NO_PATHCONV=1 을 적용하고(from-json 모드는 파일 경로 인자가 있어 제외), CMD 경로꼴 정규화를 2차 방어로 넣었다. 기존 67건은 접두사 제거로 원문 복원했다.",
+      "impact": "오염 67건 복원, 잔여 0건. cmd 분포가 /dev 48 · /tune 34 · /aiwf-report 6 으로 정상화되어 /log 의 커맨드별 집계가 실제 값을 반영한다.",
+      "learnings": "패치 후에도 증상이 남으면 가설이 틀린 것이다. bash -x 에서 값이 정상인데 결과가 오염됐다는 불일치가 진짜 경계(네이티브 exe 호출)를 가리키는 단서였다 — 첫 가설을 검증 없이 믿었다면 방어 코드만 늘고 버그는 남았다.",
+      "techStack": [
+        "bash",
+        "jq",
+        "python",
+        "windows-msys"
+      ],
+      "tags": [
+        "tune",
+        "bugfix",
+        "observability"
+      ],
+      "affectedAreas": [
+        "scripts"
+      ],
+      "domain": "ai-workflow-meta",
+      "metrics": {
+        "changedFiles": 1,
+        "linesAdded": 18,
+        "linesDeleted": 1
+      }
+    },
+    {
+      "id": "ai-workflow/pr-body-diagrams-qna",
+      "date": "2026-07-22",
+      "startedAt": "2026-07-22",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "PR 본문 템플릿 전면 교체 — flowchart+sequence 다이어그램 필수화 + 예상 질의응답 섹션 신설",
+      "whyMatters": "PR 본문은 리뷰어가 코드 diff 를 보기 전 먼저 읽는 관문이라 본문 품질이 검수 병목을 좌우한다. 기존 템플릿은 서술형 4대 질문(왜 수정/어떻게 설계/어떤 코드/리뷰어 요청) 중심이라 리뷰어가 동작 흐름을 글로 재구성해야 했고, 다이어그램은 '있으면 좋음' 권고에 그쳐 실제로는 거의 붙지 않았다. 또 팀장·팀원이 리뷰에서 반복해 묻는 질문(하위호환 되나 / 실패 케이스는 / 대안은 왜 안 썼나)에 본문이 선제 답하지 않아 리뷰 왕복이 매번 1회 이상 발생했다.",
+      "howSolved": "본문 골격을 번호 8섹션으로 재편했다: 1 기능설명 · 2 문제상황 · 3 흐름도(flowchart) · 4 시퀀스(sequenceDiagram) · 5 케이스별 동작(정상/경계/실패 표) · 6 하위호환(API·DB·설정·롤백 표) · 7 예상 질의응답 · 8 리뷰 포인트. 다이어그램을 권고에서 필수로 승격하되 빈 껍데기 방지를 위한 생략 규칙을 붙였다(§3 생략 불가, §4 는 참여 주체 1개면 생략, trivial 은 §5·§6 를 한 줄로 축약하되 migration_safety 가 🟢/n-a 가 아니면 표 유지). 폐기한 체크리스트 4항목은 Phase 5 가 이미 기계 검증하던 결과만 노출하는 '검증 상태 배지' 한 줄로 계승했고, 소실될 뻔한 설계 대안 narrative 는 §7 의 '대안을 왜 안 썼나' 필수 1문항으로 흡수했다.",
+      "learnings": "구 템플릿의 지시 문구를 통째 교체할 때 그 블록이 다른 곳의 유일한 정의처(--strict 의 AskUserQuestion 옵션)일 수 있다 — 삭제 diff 는 참조 grep 만으로는 안 잡히므로 '삭제된 블록이 정의하던 것'을 별도로 따져야 한다.",
+      "techStack": [
+        "bash",
+        "markdown",
+        "agent-prompt"
+      ],
+      "tags": [
+        "ai-workflow",
+        "meta",
+        "dev-phase-5"
+      ],
+      "affectedAreas": [
+        "_dev-procedures",
+        "commands"
+      ],
+      "domain": "ai-workflow-meta",
+      "metrics": {
+        "changedFiles": 3,
+        "linesAdded": 112,
+        "linesDeleted": 60,
+        "durationSec": 0
+      }
+    },
+    {
+      "id": "With-Suhyeon-Server/map-meetup-post",
+      "date": "2026-07-22",
+      "startedAt": "2026-07-22",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "지도 핀 만남 모집 글 — 실험실 기능 (수현이 찾기 글 위치 정밀화)",
+      "whyMatters": "수현이 찾기 글의 장소 정보가 지역 텍스트뿐이라 실제 만남 장소는 채팅에서 재조율해야 했다. 약속 장소를 지도 핀(WGS84 좌표+장소명)과 만날 시각으로 글 작성 시점에 정밀 등록하고 지도 화면에서 주변 모집 글을 탐색하게 해 매칭 효율을 높인다. 위치정보 민감성과 위치약관 미제정 BLOCKER 를 감안해 실험실(lab_feature) 기능으로 fail-closed 출시.",
+      "howSolved": "post_location 1:N 테이블(글당 1핀 강제, seq 로 다중 핀 확장 대비) + (lat,lng) 복합 인덱스 BETWEEN bbox 쿼리로 지도 조회 구현. 게이트는 실험실→성인→위치약관 AND 순서 강제(MapPostGateChecker), 성인·약관 검사는 NearbyGateChecker 에서 LocationFeatureQualificationChecker 로 공통 추출해 재사용(nearby 동작 불변). 지도 조회는 차단·만료·탈퇴 작성자 제외. 응답은 nullable 필드 말미 추가만으로 non-breaking.",
+      "learnings": "spec 1차 리뷰 지적이 반영 없이 재리뷰 호출돼 2차 NEEDS_WORK — Phase 1.5 반영 단계 누락 주의. gradle 백그라운드 다중 실행 시 로그 이중 쓰기·좀비 JVM 파일 잠금으로 판정 혼선 — executor 프로세스 종료 기준 판정이 확실.",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.4",
+        "MySQL",
+        "Flyway",
+        "JPA/QueryDSL"
+      ],
+      "tags": [
+        "lab-feature",
+        "post",
+        "location"
+      ],
+      "affectedAreas": [
+        "post",
+        "lab-feature",
+        "nearby-gate"
+      ],
+      "domain": "post",
+      "metrics": {
+        "changedFiles": 26,
+        "linesAdded": 3173,
+        "linesDeleted": 27
+      }
+    },
+    {
+      "id": "With-Suhyeon-Server/nearby-lab-gate",
+      "date": "2026-07-22",
+      "startedAt": "2026-07-21",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "nearby 를 실험실 게이트에 AND 합성 (기존 게이트 유지)",
+      "whyMatters": "직전 PR #346 이 실험실(Lab) 레지스트리를 만들었지만 nearby 는 '실험실로 이관하면 약관·성인 게이트를 우회할 수 있다'는 우려로 연결하지 않고 남겨뒀다. 이번 작업은 그 우려를 이관이 아니라 AND 합성으로 해소한다 — 실험실은 기존 게이트를 대체하지 않고 조건을 하나 더 얹기만 하므로 진입 대상이 좁아지기만 하고 우회 경로가 구조적으로 생길 수 없다. 효과는 두 가지: 운영 ON 이전에도 특정 테스터에게만 nearby 를 열어 실기기 검증이 가능해지고(기존 전역 킬스위치는 켜면 전 유저에게 열림), 실험실 목록이 nearby 의 실제 진입 가능 여부를 정확히 표시한다.",
+      "howSolved": "nearby 진입을 실제로 차단하는 유일 지점인 NearbyGateChecker 안에 실험실 판정을 넣어 게이트가 갈라지지 않게 했다. checkEnabled(long userId) 로 시그니처를 바꾸고 킬스위치 통과 직후 LabFeatureGateChecker.check(userId, \"nearby\") 를 호출하며, 실험실이 던지는 LAB_FEATURE_* 예외는 그 자리에서 잡아 기존 NEARBY_DISABLED(403)로 재매핑해 앱 계약을 불변으로 유지했다(앱 변경 0). 판정 순서는 킬스위치 → 실험실 → 성인 → 약관 — 아직 열지 않은 기능에 미성년/약관 안내가 먼저 나가 기능 존재가 새지 않게 하기 위함. 호출부 5곳 전수 적용했고 accept/decline 은 게이트가 리소스 조회보다 앞이라 없는 requestId 도 404 대신 403 이 나간다. 신규 NearbyEntryProbe 로 실험실 목록의 entryAvailable 을 킬스위치 && 성인 && 약관동의로 판정한다.",
+      "impact": "신규 NearbyLabGateIntegrationTest 18케이스 + 기존 nearby/lab 13클래스 115테스트 통과. 전체 스위트 757 중 5실패는 base 선존재(git stash 로 실증).",
+      "learnings": "spec-reviewer 1차 Major 는 '중복이라 뺐다'는 근거 문장이 실제 시스템(독립된 두 스위치)과 어긋난 케이스였다 — 판정 축이 여러 개일 때 '이미 필터가 봤다'는 가정은 필터의 실제 대상 컬럼까지 확인해야 한다. 구현 단계에서는 spec 에 없던 필수 수정 1건(참여 트랜잭션의 rollback-only 마킹으로 403 이 500 으로 뒤집힘)이 나왔다 — 예외를 잡아 변환하는 상위 호출자가 있으면 하위 @Transactional 의 롤백 규칙까지 따져야 한다.",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.4",
+        "MySQL",
+        "Flyway",
+        "JUnit5",
+        "Gradle"
+      ],
+      "tags": [
+        "nearby",
+        "lab-features",
+        "feature-gate"
+      ],
+      "affectedAreas": [
+        "nearby",
+        "lab",
+        "gate"
+      ],
+      "domain": "nearby",
+      "metrics": {
+        "changedFiles": 9,
+        "linesAdded": 1906,
+        "linesDeleted": 25
+      }
+    },
+    {
+      "id": "With-Suhyeon-Server/lab-features",
+      "date": "2026-07-21",
+      "startedAt": "2026-07-21",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "실험실(Lab) 기능 — 실험 기능 레지스트리 + 유저 역할 게이팅",
+      "whyMatters": "출시 전 기능의 온오프 스위치가 기능마다 흩어져 있었고 '특정 사람에게만 먼저 연다'는 개념 자체가 없었다. 유저 역할(일반/테스터/스태프)도 부재해 테스터 선공개→피드백 루프를 만들 수 없었다. 실험 기능을 단일 레지스트리로 정규화해 앞으로 실험 기능이 늘어도 스위치를 새로 만들 필요가 없게 했다.",
+      "howSolved": "lab_feature + lab_feature_allowed_role 테이블과 user.role 컬럼을 도입하고, 공개 범위를 visibility(ALL/ROLES)로 명시 선언. 목록 필터와 진입 게이트가 LabFeatureEntity.isVisibleTo 단일 메서드를 공유해 해석 분기를 구조적으로 제거했다. 유저 API 1개 + 어드민 REST 4개, entryAvailable로 '목록 노출'과 '기능 고유 자격 통과'를 분리.",
+      "learnings": "Phase 5 게이트에서 전체 스위트(13분)가 툴 타임아웃(10분)에 걸려 중단 → 세션과 독립된 detached 프로세스로 돌리고 로그 파일을 폴링하는 방식으로 해결.",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.4",
+        "MySQL",
+        "Flyway",
+        "JPA"
+      ],
+      "tags": [
+        "feature-flag",
+        "admin",
+        "access-control"
+      ],
+      "affectedAreas": [
+        "lab",
+        "admin",
+        "user"
+      ],
+      "metrics": {
+        "changedFiles": 23,
+        "linesAdded": 2100,
+        "linesDeleted": 11
+      }
+    },
+    {
+      "id": "member/member-view-revamp",
+      "date": "2026-07-19",
+      "startedAt": "2026-07-18",
+      "project": "jhin-eye",
+      "kind": "feature",
+      "projectId": "jhin-eye",
+      "summary": "member 웹 화면 전면 개선",
+      "whyMatters": "member 서비스 웹 화면 27개 전수 분석에서 발견된 결함 일괄 해소: 존재하지 않는 템플릿을 반환하는 500 엔드포인트, t.me/null 로 렌더되는 텔레그램 봇 링크, DB 전체 스키마(/ddl.sql) 공개 노출, 크롤링 원문 raw HTML 렌더(stored XSS), 모바일 레이아웃 깨짐, head 블록 27줄 x 17화면 복붙 등 사용자 경험·보안·유지보수성 문제를 한 번에 정리.",
+      "howSolved": "레거시 화면은 현대 화면으로 302 리다이렉트 후 템플릿 7개 삭제. 공통 head 를 Thymeleaf fragment 파라미터로 추출해 17개 화면 공유. admin 에 검증된 flex-col lg:flex-row 패턴을 aside 화면 8개에 전파. AsideMenu.settingMenus() 공용 팩토리로 3개 컨트롤러 중복 제거. th:utext→th:text 이스케이프. 신규 테스트 9클래스(MockMvc+템플릿 실렌더 검증) RED→GREEN TDD, 카카오 콜백은 회귀 가드로 불변 보장.",
+      "impact": "500 엔드포인트 2개 제거, 보안 노출 2건 차단, 렌더링 버그 3건 수정, 템플릿 26→20개 정리, 전체 테스트 57건 통과",
+      "learnings": "main 베이스가 테스트 컴파일 깨진 상태로 방치돼 있었음(CI -x test 스킵의 부작용 실증) — CI 테스트 활성화 필요성 재확인",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.2",
+        "Thymeleaf",
+        "Tailwind CSS",
+        "MockMvc",
+        "JUnit 5"
+      ],
+      "tags": [
+        "view-layer",
+        "security",
+        "refactor"
+      ],
+      "affectedAreas": [
+        "member/controller",
+        "member/templates"
+      ],
+      "domain": "member-web",
+      "metrics": {
+        "changedFiles": 57,
+        "linesAdded": 2490,
+        "linesDeleted": 665
+      }
+    },
+    {
+      "id": "ai-workflow/dev-md-phase-split",
+      "date": "2026-07-15",
+      "startedAt": "2026-07-15",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "dev.md 경량화 — Phase 상세를 _dev-procedures/dev-phase-*.md 로 분리, 진입 시 Read + 멈춤 지점 /clear 안내",
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "With-Suhyeon-Server/admin-coin-usage",
+      "date": "2026-07-15",
+      "startedAt": "2026-07-10",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "어드민 코인 사용처 분포"
+    },
+    {
+      "id": "With-Suhyeon-Server/nearby-suhyeon",
+      "date": "2026-07-15",
+      "startedAt": "2026-07-15",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "위치기반 내 주변 수현이 찾기",
+      "whyMatters": "수현이 찾기가 여행 목적지(Region) 게시글 기반이라 '지금 내 근처 사람'을 못 찾음 — 위치 기반 탐색으로 매칭 접점 확대 + 채팅 연결 코인 소비로 수익화 접점 추가. 알리바이 앱 특성상 위치는 최고 민감 데이터라 '서버 비저장'이 최우선 설계 제약.",
+      "howSolved": "Redis GEO 시간버킷 키(15분 버킷, TTL 30분)로 좌표 비저장 presence — DB에 좌표 컬럼 자체가 없음. 탐색=노출 원자화(상호 opt-in), 성인19+·위치약관·킬스위치(기본 OFF) 3중 게이트, 500m 그리드 스냅+지터 근사 좌표. 채팅 연결은 요청자 단독 1코인(AppSetting) + 거절/24h만료 스냅샷 환불, 기존 ChatRoom 2-row·ledger·FCM 경로 재사용.",
+      "impact": "신규 코인 소진처 1개(NEARBY_CHAT_REQUEST). 킬스위치 OFF 라 유저 노출은 legal 게이트 통과 후.",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.4",
+        "Redis GEO",
+        "MySQL",
+        "Flyway",
+        "FCM"
+      ],
+      "affectedAreas": [
+        "nearby",
+        "ticket",
+        "chat",
+        "notification"
+      ],
+      "domain": "matching",
+      "metrics": {
+        "changedFiles": 27
+      }
+    },
+    {
+      "id": "With-Suhyeon-Server/curation",
+      "date": "2026-07-14",
+      "startedAt": "2026-07-10",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "큐레이션 PR #329 머지 (dev/sprint-12)"
+    },
+    {
+      "id": "withSuhyeon/token-offload-pipeline",
+      "date": "2026-07-08",
+      "startedAt": "2026-07-08",
+      "project": "With Suhyeon",
+      "kind": "tooling",
+      "summary": "토큰 오프로드 파이프라인 내장 — 모델 티어 7종 + scripts/llm 라우터 + 오프로드 훅 5곳(learning-doc-writer/project-analyzer/issue/test-writer/spec-test-writer) + CLAUDE.md 5축 규약",
+      "whyMatters": "model 미지정 에이전트가 세션 모델(Fable)로 돌아 비용 누수 + 대량 입출력(HTML 초안·레포 통독·로그)을 전부 Claude 토큰으로 처리하던 구조를, 무료(Gemini)·로컬(Ollama qwen2.5-coder:14b) 오프로드로 라우팅. 오프로드 출력은 초안 취급(검증 필수), 판단 게이트는 inherit 유지.",
+      "howSolved": "inbox 노트(5축 프레임) → worktree 패치 → meta-review NEEDS_WORK 1회(실행권한 100755/install chmod 케이스/PATH 문구) 재패치 → ff 머지 + install 재실행",
+      "techStack": [
+        "bash",
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "agents",
+        "commands",
+        "scripts",
+        "CLAUDE.md"
+      ],
+      "domain": "ai-workflow-meta",
+      "metrics": {
+        "changedFiles": 13,
+        "linesAdded": 155,
+        "linesDeleted": 5
+      }
+    },
+    {
+      "id": "ai-workflow/statusline-current-work",
+      "date": "2026-07-07",
+      "startedAt": "2026-07-07",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "상태줄에 진행 중 작업(dev 단계·tune)과 마지막 사용자 질문 표시",
+      "whyMatters": "여러 세션을 오가는 워크플로우에서 각 세션이 지금 무슨 작업·무슨 질문을 다루는 중인지 터미널만 보고 알 수 없었음 — 사용자 요청: 모든 세션 하단에 현재 작업 표시.",
+      "howSolved": "statusline.mjs 확장: .ai-company/dev/*/status.json(활성 slug·단계 한글 라벨, 종결·7일 stale 제외, blocked ⚠)과 .tune/* worktree 를 line 2에, transcript 꼬리 256KB에서 추출한 마지막 사람 입력 60자를 line 3에. 실패 전부 silent, LLM 없음. 픽스처 4케이스+실제 transcript 테스트.",
+      "techStack": [
+        "node",
+        "javascript"
+      ],
+      "affectedAreas": [
+        "statusline"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/statusline-readable",
+      "date": "2026-07-07",
+      "startedAt": "2026-07-07",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "상태줄 가독성 개편 — ANSI 색 위계 + 한글 라벨(작업/나/AI)",
+      "whyMatters": "직전 statusline 개편 후 사용자가 '못 알아보겠다' — 모두 회색 | 구분에 숫자 과다로 정작 볼 정보(작업/질문/recap)가 묻힘.",
+      "howSolved": "지표(모델·ctx·비용·duration·5h·브랜치)를 흐린 dim 한 줄로 통합(· 구분), 핵심 3종을 색 라벨로 전면화 — 작업(청록)·나(노랑)·AI(자홍), CJK 표시폭 계산 padLabel 로 열 맞춤. ❯·⋯ 기호 제거, ctx 80%+/blocked 빨강. 7d·lines-changed 제거. 작업/질문/recap 없으면 각 줄 미표시.",
+      "techStack": [
+        "node",
+        "javascript",
+        "ansi"
+      ],
+      "affectedAreas": [
+        "statusline"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/statusline-recap",
+      "date": "2026-07-07",
+      "startedAt": "2026-07-07",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "상태줄에 Claude 마지막 narration(recap) 추가 표시",
+      "whyMatters": "여러 세션을 오갈 때 '이 창의 Claude가 지금 뭐 하고 있나'를 상태줄만으로 알고 싶다는 요청. 마지막 질문(직전 tune)에 더해 Claude 쪽 진행 상황도.",
+      "howSolved": "statusline.mjs getLastPrompt→getLastTurn 리팩터: transcript 꼬리 256KB 1회 read 로 user 마지막 질문·assistant 마지막 텍스트 narration 동시 추출. 텍스트 블록만(thinking/tool_use 제외), 70자 클립, line 4(⋯). LLM 없음 = 추가 토큰 0. 실제 7.4MB transcript + 무 transcript 케이스 테스트.",
+      "techStack": [
+        "node",
+        "javascript"
+      ],
+      "affectedAreas": [
+        "statusline"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "With-Suhyeon-Server/admin-user-search",
+      "date": "2026-07-07",
+      "startedAt": "2026-07-06",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "어드민 유저 검색·상세·제재"
+    },
+    {
+      "id": "ai-workflow/agent-model-tiers",
+      "date": "2026-07-06",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "에이전트 모델 3티어 재배치 — 게이트·생산 inherit, 문서 sonnet, 스캔 haiku",
+      "whyMatters": "opus 고정은 Fable 5 이전 유산 — 세션이 Fable로 돌면서 리뷰 게이트(spec/meta/code/test-reviewer, legal)가 작성자보다 약한 모델로 검토하는 역전 발생. dep-scanner는 기계 스캔에 opus를 소모. 사용자 결정: 테스트 생산도 엣지케이스 발굴 때문에 고수 필요.",
+      "howSolved": "13개 frontmatter model 변경: 게이트 5 + implementer·spec-test-writer·test-writer = 명시적 inherit(세션 동급 영구 보장), learning-doc-writer·project-analyzer·onboard-analyzer = sonnet(대량 문서화), endpoint-scanner·dep-scanner = haiku(규칙 기반 스캔). 미지정=inherit 공식 확인(claude-code-guide) 후 설계. meta-review PASS(분류 일치·frontmatter 무손상·인접 드리프트 0·haiku 타당성 정독).",
+      "techStack": [
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "agents"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/context-doc-zones",
+      "date": "2026-07-06",
+      "startedAt": "2026-07-06",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "PROJECT_CONTEXT 3구역 통합 — 정체성 미러 + 기술 구조 + 작업 학습(캡·승격)",
+      "whyMatters": "PROJECT_CONTEXT(기술)와 프로덕트 정본(정체성)이 분리돼 LLM이 서비스 성격을 놓친 채 코드 작업하는 사고 여지 + 작업 중 발견한 함정이 세션 종료와 함께 증발. 사용자 요구: 파일 하나로 서비스 파악 + 작업할수록 스스로 좋아지는 문서.",
+      "howSolved": "project-analyzer 산출 규약을 3구역으로: 정본 단방향 미러(상위 탐색·원본 소유권 사람), 기술 구조(기계 재생성 유일 구역), 작업 학습(dev/issue 자동 적립, 캡15·dedup·3회 승격). 재생성 보존 규칙 + 구버전 마이그레이션. 파일명 유지로 read 경로 20곳 무변경 — 리뷰어 전수 grep 검증.",
+      "techStack": [
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "agents",
+        "commands",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/dev-handoff-note",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/dev 서브에이전트 간 handoff 노트 복원 — status.json handoffNotes + Phase 2→3·3→4 주입",
+      "whyMatters": "하네스 병합 때 유실된 장치 — 서브에이전트가 작업 중 알게 된 비공식 함정(예: H2 미재현으로 testcontainers 사용, @Transactional 시 테스트 깨짐)이 정식 산출물에 자리가 없어 에이전트 종료와 함께 증발. 자동 진행 기본이라 사람이 중간 보충할 지점도 적음.",
+      "howSolved": "서브에이전트 보고 규약에 handoff 필드(선택, 최대 3줄, 산출물 반복 금지, 없으면 생략) 추가. 메인 세션이 status.json handoffNotes(선택 필드, non-breaking)에 저장 후 다음 에이전트 프롬프트 끝에 주입. 적용 구간은 Phase 2→3(spec-test-writer→implementer), 3→4(implementer→code-reviewer)만, small fast-path 제외 명시.",
+      "techStack": [
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "commands",
+        "agents"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/figma-draft-skill",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/figma-draft 커맨드 신설 — Figma 컨벤션 학습 후 와이어프레임 생성",
+      "whyMatters": "기능 명세에서 Figma 시안으로 가는 단계가 전부 수동이었음. Figma MCP write-to-canvas(2026-02 Claude Code 통합)로 자동화 가능해졌는데 하네스에 스킬 부재. 컨벤션 학습 없이 그리면 기존 디자인 시스템과 튀는 시안이 나오는 문제를 학습-승인 게이트로 방지.",
+      "howSolved": "commands/figma-draft.md 110줄: Phase 0 MCP 연결확인(미연결 시 종료), Phase 1 대상 파일 컴포넌트·variables·그리드 학습 + 요약 보고 + 승인 게이트(생략 시 실패 간주), Phase 2 새 페이지에만 생성(기존 프레임 수정·삭제 금지, 인스턴스 재사용 우선, AI draft 라벨), Phase 3 링크 보고 + write 실패 시 SVG 폴백. README·사용설명서 동기화.",
+      "techStack": [
+        "markdown",
+        "agent-prompt",
+        "mcp"
+      ],
+      "affectedAreas": [
+        "commands",
+        "README",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/insight-skill",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/insight 커맨드 + data-analyst 에이전트 — 앱 데이터 기반 의사결정 지원",
+      "whyMatters": "앱 데이터로 의사결정하려면 매번 스키마 설명부터 다시 하고 운영 DB에 안전장치 없이 붙는 반복 마찰. 텍소노미를 먼저 설계하는 대신 질문 주도(분석→미답 질문 적립→텍소노미→/dev 핸드오프)로 계측의 실제 필요를 증명하는 파이프라인.",
+      "howSolved": "commands/insight.md 160줄 3모드: --init(DB 실측 스캔→카탈로그 사람 확정, PII 컬럼 표시), 분석(계획 보고→data-analyst 관점별 병렬→결론·근거쿼리·한계·반대해석 HTML, 미답이면 unanswered.md 적립), --taxonomy(이벤트 설계→instrumentation-spec 생성→/dev 인계, 프로덕트 코드 직접 수정 금지). agents/data-analyst.md: READ-ONLY 강제(거부 규정), 쿼리 전문+원본 수치만.",
+      "techStack": [
+        "markdown",
+        "agent-prompt",
+        "sql"
+      ],
+      "affectedAreas": [
+        "commands",
+        "agents",
+        "README",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/monetization-expert",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "앱 수익화 전문 에이전트 신설 + /consult monetization 배선",
+      "whyMatters": "수익모델·가격·페이월 결정에 전문 관점이 없어 /consult의 범용 domain-expert로 커버 — 스토어 정책(수수료·결제)은 자주 바뀌어 기억 기반 답변이 위험하고, 데이터 근거 없는 가격 결정 반복.",
+      "howSolved": "agents/monetization-expert.md: 수익모델 비교·가격/플랜·페이월 퍼널·ARPU/LTV 지표·실험 설계 커버. 원칙 3: 스토어 정책 웹검증+출처(기억 금지), 데이터 근거 우선(.ai-company/analytics 참조 — /insight 연계), 결제·구독 권고에 legal-risk-reviewer 후속 검토 제안. consult.md에 monetization 부서 행+선택 규칙 — legal-risk-reviewer 배선과 완전 패리티.",
+      "techStack": [
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "agents",
+        "commands",
+        "README",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/notion-def-skill",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/notion-def 커맨드 신설 — Notion 컨벤션 학습 후 기능정의 페이지 생성",
+      "whyMatters": "기능정의(명세서보다 가벼운 층위) 문서를 Notion에 쓰는 작업이 수동이고 기존 페이지들과 포맷이 어긋나기 쉬움. 컨벤션 학습 단계(어디서 뭘 배웠는지 생성 전 보고)로 워크스페이스에 녹아드는 문서 생성.",
+      "howSolved": "commands/notion-def.md 70줄: Phase 0 Notion MCP 연결확인, Phase 1 참조 URL 1순위→기능정의 검색 fallback→실패 시 기본 템플릿+명시, Phase 2 같은 위치·기능정의 층위 유지(구현 상세 금지)·TBD 처리·기존 페이지 수정 금지(리뷰어 권고 반영), Phase 3 링크+참조+TBD 보고. README·사용설명서 동기화, 커맨드 개수 표기 18로 정합(rebase 충돌 수동 해소).",
+      "techStack": [
+        "markdown",
+        "agent-prompt",
+        "mcp"
+      ],
+      "affectedAreas": [
+        "commands",
+        "README",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/plan-skill",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/plan 기획 커맨드 — 정본 기반 기획서(HTML/Figma) + 전문가 병렬 근거 수집 + /dev 핸드오프",
+      "whyMatters": "기획→구현 파이프라인의 앞단이 비어 있었음 — 오늘 신설한 insight/monetization/legal/figma/notion 조각들을 꿰는 오케스트레이터 부재. 사용자의 실제 기획은 Figma 캔버스에서 이루어져 HTML 단일 채널로는 실워크플로우와 어긋남.",
+      "howSolved": "commands/plan.md 단일 신설(신규 에이전트 0 — 기존 4종 지휘). 정본 로드·갱신은 consult.md 규정 참조로 드리프트 방지. 기획서 채널 이원화: --figma/정본 기록 시 Figma 캔버스(컨벤션 학습 후 새 페이지, 갱신은 AI draft 직접·사람 페이지는 복제본에서 PR 방식 — 사람이 원본 병합, 사본은 스킬이 삭제, UPDATED 태그+변경 요약 필수), 그 외 HTML. 성공 지표 측정 방법 필수, 확정 게이트 후 dev-brief md 생성.",
+      "techStack": [
+        "markdown",
+        "agent-prompt",
+        "mcp"
+      ],
+      "affectedAreas": [
+        "commands",
+        "README",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/test-doc-real-scenario",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "테스트 명세에 '실제 시나리오' 섹션 표준화 — spec-test-writer 템플릿 + Phase 2 게이트 시나리오 디폴트",
+      "whyMatters": "spec-test-writer 산출 테스트 명세가 기술용어(idempotencyKey, ledger GRANT 등) 위주라 사용자가 검수 게이트에서 이해 불가 — withSuhyeon WSH-487에서 실제로 '하나도 이해할 수 없다' 피드백. 검수 게이트가 형식화되면 TDD 파이프라인의 사람 게이트 하나가 무력화되는 문제.",
+      "howSolved": "spec-test-writer 산출 명세에 실제 시나리오 표준 템플릿(등장인물·모드 다이어그램·현실상황→검증포인트 2열 표·도메인용어 평이어 사전·픽스처 수치 '테스트 설정값' 주석)을 의무화하고, dev.md Phase 2 검수 stop 디폴트를 시나리오 버전으로 전환(기술 상세는 부록). develop.md는 spec-test-writer 미호출 구조라 fallback 시나리오 표로 명시, ai-workflow.md·사용설명서.html 문구 동기화.",
+      "techStack": [
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "agents",
+        "commands",
+        "사용설명서"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "ai-workflow/worktree-runtime-bootstrap",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "worktree 생성 시 런타임 리소스 미러링 + IDE run config bootstrap",
+      "whyMatters": "/dev worktree에서 gitignore된 런타임 리소스(.env, 인증서)와 IDE 실행 프로필이 따라오지 않아 앱 실행 실패 — 매번 수동 복사. 원 환경에서 high 우선순위로 2회 겪은 마찰, jhin-eye(.env.local·멀티서비스)도 동일 구조.",
+      "howSolved": "scripts/_dev-worktree-bootstrap.sh 신설(190줄): git ls-files --others --ignored 실측 기반으로 resources/** + .env 계열을 이름 화이트리스트로 걸러 미러링(기존 파일 불변), ide.kind 설정 시 settings.gradle rootProject.name 파싱 + @SpringBootApplication grep으로 IntelliJ run config portable 생성. dev.md worktree 생성 블록에 best-effort 호출 1줄(실패해도 /dev 안 막음). 가짜 repo 스모크 테스트 통과.",
+      "techStack": [
+        "bash",
+        "markdown"
+      ],
+      "affectedAreas": [
+        "scripts",
+        "commands"
+      ],
+      "domain": "ai-workflow-meta"
+    },
+    {
+      "id": "With-Suhyeon-Server/user-restriction",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "사용자 이용 제한 + 제한기간 알림",
+      "whyMatters": "신고 등으로 제재가 필요한 유저를 운영자가 직접 막을 수단이 없었음. TL 요청으로 '앱 접속은 되나 기능 사용 불가' + 제한기간 알림 + 클라 토스트용 에러코드를 도입 — 운영 제재 수단 확보.",
+      "howSolved": "HandlerInterceptor로 /api/** 쓰기 메서드만 차단(GET 통과, 미인증 통과, auth/탈퇴/어드민 allowlist), 활성 판정은 조회 시점 계산(released_at NULL AND until 미도래)으로 배치 없이 자동 만료. 알림은 기존 REPORT 타입 재사용으로 클라 작업 0. BaseException에 동적 message 오버로드 추가(기존 응답 비트 동일). user_restriction 테이블 신규(멱등 마이그레이션).",
+      "impact": "통합 테스트 13케이스(차단 7 + 과잉차단 가드 6) GREEN",
+      "techStack": [
+        "Java 17",
+        "Spring Boot 3.4",
+        "MySQL",
+        "Flyway",
+        "Thymeleaf"
+      ],
+      "affectedAreas": [
+        "security",
+        "admin",
+        "notification"
+      ],
+      "metrics": {
+        "changedFiles": 18
+      }
+    },
+    {
+      "id": "withSuhyeon/product-context-legal-agent",
+      "date": "2026-07-05",
+      "startedAt": "2026-07-05",
+      "project": "With Suhyeon",
+      "kind": "tooling",
+      "summary": "프로덕트 정본 통합관제(.ai-company/context/product.md) + legal-risk-reviewer 에이전트 신설",
+      "whyMatters": "세션에서 앱 성격(수현이랑=알리바이 앱)을 '사진 촬영 매칭'으로 오해한 채 전략 문서를 작성한 사고 발생. CLAUDE.md 한 줄 외에 서비스 정체성 정본이 없고 에이전트 주입 경로도 없던 것이 근본 원인.",
+      "howSolved": "consult Phase 0 정본 필수 로드/부트스트랩 게이트 + 전문가 프롬프트에 정본 전문 주입 + contextGap 환류(Phase 3.5). dev/issue 는 additive 옵셔널 입력. legal-risk-reviewer 신규(검토 5축, BLOCKER~LOW 매트릭스, model: opus). README/사용설명서 15개 동기화.",
+      "techStack": [
+        "bash",
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "commands",
+        "agents",
+        "docs"
+      ],
+      "domain": "ai-workflow-meta",
+      "metrics": {
+        "changedFiles": 10,
+        "linesAdded": 129,
+        "linesDeleted": 9
+      }
+    },
+    {
+      "id": "ai-workflow/sandbox-orchestrator-wiring",
+      "date": "2026-07-04",
+      "startedAt": "2026-07-02",
+      "project": "ai-workflow",
+      "kind": "tooling",
+      "summary": "/sandbox 커맨드 신설 — sandbox 프리미티브 4종 배선 + Windows mkdir 락 폴백",
+      "whyMatters": "멀티서비스 로컬 e2e 를 manifest 한 장으로 자동 기동/정리 — 레포별 localDocker 컨벤션 수동 조정 마찰 제거",
+      "howSolved": "신규 commands/sandbox.md (up/down/status/init, 위상정렬·refcount·fail-fast) + runtime.sh mkdir 락 폴백(벽시계 timeout) + 동시성 테스트 폴백 경로 전환 + 문서 16개 동기화",
+      "techStack": [
+        "bash",
+        "markdown",
+        "agent-prompt"
+      ],
+      "affectedAreas": [
+        "commands",
+        "scripts",
+        "tests",
+        "docs"
+      ],
+      "domain": "ai-workflow-meta"
+    }
+  ]
+}
