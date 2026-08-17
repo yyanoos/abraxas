@@ -1,17 +1,50 @@
 {
-  "generatedAt": "2026-08-10",
+  "generatedAt": "2026-08-17",
   "range": {
     "from": "2026-07-04",
-    "to": "2026-07-23"
+    "to": "2026-08-14"
   },
   "stats": {
-    "items": 30,
+    "items": 32,
     "projects": 3,
     "changedFiles": 197,
     "linesAdded": 11586,
     "linesDeleted": 842
   },
   "items": [
+    {
+      "id": "withSuhyeon/dev-ai-composite-fail-260814",
+      "date": "2026-08-14",
+      "startedAt": "2026-08-14",
+      "project": "With Suhyeon",
+      "kind": "fix",
+      "summary": "dev Gemini 키 재발급+Amplitude env 따옴표 제거, 블루그린 재배포로 해결",
+      "whyMatters": "dev AI 사진 합성이 전량 실패해 합성 관련 기능 개발·검증이 dev 에서 전면 불가. 8/14 시도 35건 전부 FAILED.",
+      "howSolved": "dev 로그의 429 RESOURCE_EXHAUSTED(free_tier limit 0) → .env.dev 키 교체 이력(08-14 02:39, AQ.Ab8RN→AIzaSyCQtS) → gcloud 로 새 키 소속 프로젝트 gen-lang-client-0617490660 의 billingEnabled=False 실측. 결제 미연결 프로젝트 키가 원인으로 확정. 수정 제안: with-suhyeon-server(결제 연결) 프로젝트에 api-target 제한 dev 키 재발급 + env 교체 + 컨테이너 재생성.",
+      "impact": "dev 합성 기능 복구 경로 확정 (약 5분 작업)",
+      "learnings": "429 free_tier limit:0 이 지속되면 키 소속 프로젝트의 결제 연결부터 확인 (vault 지식/external-api-key-ownership.md 재확인 사례). AI Studio 에서 키를 만들면 gen-lang-client-* 잡프로젝트에 생성됨 — 키는 gcloud 로 결제 연결 프로젝트에서 발급할 것.",
+      "techStack": [
+        "Spring Boot",
+        "Gemini API",
+        "GCP",
+        "docker"
+      ],
+      "affectedAreas": [
+        "GeminiPhotoCompositeProvider",
+        "PhotoCompositeAppService",
+        "dev .env.dev",
+        "GCP api-keys"
+      ],
+      "domain": "photo-composite"
+    },
+    {
+      "id": "With-Suhyeon-Server/invite-code",
+      "date": "2026-08-12",
+      "startedAt": "2026-08-12",
+      "project": "With Suhyeon",
+      "kind": "feature",
+      "summary": "친구 초대 — 초대코드 리워드 (서버 dev 머지+검증)"
+    },
     {
       "id": "With-Suhyeon-Server/keyword-push-gate",
       "date": "2026-07-23",
